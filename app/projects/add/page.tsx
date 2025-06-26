@@ -3,7 +3,13 @@ import { getSession } from "@/lib/auth"
 import { isSetupComplete, initializeDatabase } from "@/lib/db"
 import { AddProjectPage } from "@/components/pages/add-project-page"
 
-export default async function AddProject() {
+interface AddProjectProps {
+  searchParams: {
+    type?: string
+  }
+}
+
+export default async function AddProject({ searchParams }: AddProjectProps) {
   // Initialize database
   initializeDatabase()
 
@@ -18,5 +24,5 @@ export default async function AddProject() {
     redirect("/login")
   }
 
-  return <AddProjectPage user={user} />
+  return <AddProjectPage user={user} selectedType={searchParams.type as any} />
 }

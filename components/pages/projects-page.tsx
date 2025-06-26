@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { ProjectTable } from "@/components/project-table"
-import type { Project, Client, User } from "@/lib/types"
+import { ProjectTypeModal } from "@/components/project-type-modal"
+import type { Project, Client, User, ProjectType } from "@/lib/types"
 import { getProjectsAction, deleteProjectAction } from "@/actions/project-actions"
 import { getClientsAction } from "@/actions/client-actions"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,8 @@ export function ProjectsPage({ user }: ProjectsPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [shareProject, setShareProject] = useState<Project | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showProjectTypeModal, setShowProjectTypeModal] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
   const router = useRouter()
 
   useEffect(() => {
@@ -42,6 +45,12 @@ export function ProjectsPage({ user }: ProjectsPageProps) {
     loadData()
   }, [])
 
+  useEffect(() => {
+    if (shareProject?.shareToken) {
+      setShareUrl(`${window.location.origin}/share/${shareProject.shareToken}`)
+    }
+  }, [shareProject])
+
   const handleDeleteProject = async (id: number) => {
     if (confirm("Bu projeyi silmek istediğinizden emin misiniz?")) {
       const result = await deleteProjectAction(id)
@@ -61,10 +70,13 @@ export function ProjectsPage({ user }: ProjectsPageProps) {
     setShareProject(project)
   }
 
-  const copyShareUrl = async () => {
-    if (!shareProject?.shareToken) return
+  const handleProjectTypeSelect = (type: ProjectType) => {
+    setShowProjectTypeModal(false)
+    router.push(`/projects/add?type=${type}`)
+  }
 
-    const shareUrl = `${window.location.origin}/share/${shareProject.shareToken}`
+  const copyShareUrl = async () => {
+    if (!shareUrl) return
 
     try {
       await navigator.clipboard.writeText(shareUrl)
@@ -78,6 +90,7 @@ export function ProjectsPage({ user }: ProjectsPageProps) {
   const closeShareModal = () => {
     setShareProject(null)
     setCopied(false)
+    setShareUrl("")
   }
 
   if (isLoading) {
@@ -101,10 +114,17 @@ export function ProjectsPage({ user }: ProjectsPageProps) {
           onDelete={handleDeleteProject}
           onEdit={handleEditProject}
           onShare={handleShareProject}
-          onAddNew={() => router.push("/projects/add")}
+          onAddNew={() => setShowProjectTypeModal(true)}
           onManageClients={() => router.push("/clients")}
         />
       </div>
+
+      {/* Project Type Modal */}
+      <ProjectTypeModal
+        isOpen={showProjectTypeModal}
+        onClose={() => setShowProjectTypeModal(false)}
+        onSelect={handleProjectTypeSelect}
+      />
 
       {/* Share Modal */}
       {shareProject && (
@@ -131,11 +151,7 @@ export function ProjectsPage({ user }: ProjectsPageProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Paylaşım Linki:</label>
                 <div className="flex gap-2">
-                  <Input
-                    value={`${window.location.origin}/share/${shareProject.shareToken}`}
-                    readOnly
-                    className="flex-1 text-sm"
-                  />
+                  <Input value={shareUrl} readOnly className="flex-1 text-sm" />
                   <Button onClick={copyShareUrl} variant="outline" size="sm">
                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     {copied ? "Kopyalandı" : "Kopyala"}

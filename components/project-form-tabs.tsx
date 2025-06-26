@@ -29,17 +29,25 @@ interface ProjectFormTabsProps {
   clients: Client[]
   initialData?: ProjectFormData
   isEditing?: boolean
+  initialProjectType?: ProjectType
 }
 
-export function ProjectFormTabs({ onSubmit, onCancel, clients, initialData, isEditing = false }: ProjectFormTabsProps) {
+export function ProjectFormTabs({
+  onSubmit,
+  onCancel,
+  clients,
+  initialData,
+  isEditing = false,
+  initialProjectType = "frontend",
+}: ProjectFormTabsProps) {
   const [settings, setSettings] = useState<Settings | null>(null)
-  const [showTypeModal, setShowTypeModal] = useState(!isEditing && !initialData)
+  const [showTypeModal, setShowTypeModal] = useState(false) // Sadece manuel açılsın
   const [activeTab, setActiveTab] = useState("info")
   const [formData, setFormData] = useState<ProjectFormData>(
     initialData || {
       name: "",
       clientId: 0,
-      projectType: "frontend",
+      projectType: initialProjectType,
       status: "pending",
       totalPages: 0,
       completedPages: 0,
@@ -67,8 +75,8 @@ export function ProjectFormTabs({ onSubmit, onCancel, clients, initialData, isEd
       if (result.success) {
         setSettings(result.data)
 
-        // Apply default values only for new projects
-        if (!isEditing && !initialData) {
+        // Apply default values for new projects AND when project type changes
+        if (!isEditing) {
           setFormData((prev) => ({
             ...prev,
             pricePerPage: result.data.defaultPricePerPage,
@@ -80,7 +88,26 @@ export function ProjectFormTabs({ onSubmit, onCancel, clients, initialData, isEd
     }
 
     loadSettings()
-  }, [isEditing, initialData])
+  }, [isEditing])
+
+  // Proje tipi değiştiğinde varsayılan fiyatları uygula
+  useEffect(() => {
+    if (settings && !isEditing) {
+      if (formData.projectType === "frontend") {
+        setFormData((prev) => ({
+          ...prev,
+          pricePerPage: prev.pricePerPage || settings.defaultPricePerPage,
+          extraHourRate: prev.extraHourRate || settings.defaultExtraHourRate,
+        }))
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          fixedPrice: prev.fixedPrice || settings.defaultFixedPrice,
+          extraHourRate: prev.extraHourRate || settings.defaultExtraHourRate,
+        }))
+      }
+    }
+  }, [formData.projectType, settings, isEditing])
 
   // Calculate total amount automatically
   useEffect(() => {
@@ -190,11 +217,9 @@ export function ProjectFormTabs({ onSubmit, onCancel, clients, initialData, isEd
                 {getProjectTypeLabel(formData.projectType)}
               </Badge>
             </div>
-            {!showTypeModal && (
-              <Button variant="outline" size="sm" onClick={() => setShowTypeModal(true)}>
-                Proje Tipini Değiştir
-              </Button>
-            )}
+            <Button variant="outline" size="sm" onClick={() => setShowTypeModal(true)}>
+              Proje Tipini Değiştir
+            </Button>
           </div>
         </CardHeader>
         <CardContent>

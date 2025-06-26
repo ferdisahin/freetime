@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,10 +25,15 @@ interface ProjectShareProps {
 
 export function ProjectShare({ project, client }: ProjectShareProps) {
   const [copied, setCopied] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
 
-  const shareUrl = `${window.location.origin}/share/${project.shareToken}`
+  useEffect(() => {
+    setShareUrl(`${window.location.origin}/share/${project.shareToken}`)
+  }, [project.shareToken])
 
   const copyToClipboard = async () => {
+    if (!shareUrl) return
+
     try {
       await navigator.clipboard.writeText(shareUrl)
       setCopied(true)

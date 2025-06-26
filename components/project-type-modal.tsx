@@ -20,9 +20,6 @@ export function ProjectTypeModal({ isOpen, onClose, onSelect }: ProjectTypeModal
       description: "Web arayüzü, kullanıcı deneyimi odaklı projeler",
       icon: Monitor,
       features: ["Sayfa bazlı fiyatlandırma", "Responsive tasarım", "UI/UX odaklı", "HTML, CSS, JavaScript"],
-      color: "bg-purple-500",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200",
     },
     {
       type: "backend" as ProjectType,
@@ -30,9 +27,6 @@ export function ProjectTypeModal({ isOpen, onClose, onSelect }: ProjectTypeModal
       description: "Sunucu tarafı, API ve veritabanı odaklı projeler",
       icon: Server,
       features: ["Sabit fiyat", "API geliştirme", "Veritabanı tasarımı", "Sunucu yönetimi"],
-      color: "bg-orange-500",
-      bgColor: "bg-orange-50",
-      borderColor: "border-orange-200",
     },
     {
       type: "fullstack" as ProjectType,
@@ -40,9 +34,6 @@ export function ProjectTypeModal({ isOpen, onClose, onSelect }: ProjectTypeModal
       description: "Hem frontend hem backend içeren kapsamlı projeler",
       icon: Layers,
       features: ["Sabit fiyat", "Tam çözüm", "Frontend + Backend", "Kapsamlı geliştirme"],
-      color: "bg-indigo-500",
-      bgColor: "bg-indigo-50",
-      borderColor: "border-indigo-200",
     },
   ]
 
@@ -66,12 +57,12 @@ export function ProjectTypeModal({ isOpen, onClose, onSelect }: ProjectTypeModal
               return (
                 <Card
                   key={projectType.type}
-                  className={`cursor-pointer hover:shadow-lg transition-all duration-200 ${projectType.borderColor} hover:scale-105`}
+                  className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary"
                   onClick={() => onSelect(projectType.type)}
                 >
                   <CardHeader className="text-center">
-                    <div className={`mx-auto p-4 rounded-full ${projectType.bgColor} w-fit`}>
-                      <Icon className={`h-8 w-8 text-white ${projectType.color.replace("bg-", "text-")}`} />
+                    <div className="mx-auto p-4 rounded-full bg-muted w-fit">
+                      <Icon className="h-8 w-8" />
                     </div>
                     <CardTitle className="text-xl">{projectType.title}</CardTitle>
                     <p className="text-sm text-muted-foreground">{projectType.description}</p>
@@ -80,13 +71,15 @@ export function ProjectTypeModal({ isOpen, onClose, onSelect }: ProjectTypeModal
                     <div className="space-y-2">
                       {projectType.features.map((feature, index) => (
                         <div key={index} className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${projectType.color}`} />
+                          <div className="w-2 h-2 rounded-full bg-primary" />
                           <span className="text-sm">{feature}</span>
                         </div>
                       ))}
                     </div>
 
-                    <Button className={`w-full ${projectType.color} hover:opacity-90`}>{projectType.title} Seç</Button>
+                    <Button className="w-full" variant="default">
+                      {projectType.title} Seç
+                    </Button>
                   </CardContent>
                 </Card>
               )
@@ -94,7 +87,7 @@ export function ProjectTypeModal({ isOpen, onClose, onSelect }: ProjectTypeModal
           </div>
         </div>
 
-        <div className="p-6 border-t bg-gray-50">
+        <div className="p-6 border-t bg-muted/30">
           <div className="text-center text-sm text-muted-foreground">
             <p>💡 İpucu: Proje tipini daha sonra değiştirebilirsiniz</p>
           </div>

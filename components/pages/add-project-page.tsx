@@ -4,17 +4,24 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { ProjectFormTabs } from "@/components/project-form-tabs"
-import type { Client, ProjectFormData, User } from "@/lib/types"
+import { ProjectTypeModal } from "@/components/project-type-modal"
+import type { Client, ProjectFormData, User, ProjectType } from "@/lib/types"
 import { createProjectAction } from "@/actions/project-actions"
 import { getClientsAction } from "@/actions/client-actions"
 
 interface AddProjectPageProps {
   user: User
+  selectedType?: ProjectType
 }
 
-export function AddProjectPage({ user }: AddProjectPageProps) {
+export function AddProjectPage({ user, selectedType }: AddProjectPageProps) {
   const [clients, setClients] = useState<Client[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  // Modal sadece selectedType yoksa açılsın
+  const [showTypeModal, setShowTypeModal] = useState(!selectedType)
+  const [projectType, setProjectType] = useState<ProjectType>(selectedType || "frontend")
+  // Modal bir kez kapatıldıktan sonra tekrar açılmasın
+  const [modalClosed, setModalClosed] = useState(!!selectedType)
   const router = useRouter()
 
   useEffect(() => {
@@ -38,6 +45,18 @@ export function AddProjectPage({ user }: AddProjectPageProps) {
     }
   }
 
+  const handleProjectTypeSelect = (type: ProjectType) => {
+    setProjectType(type)
+    setShowTypeModal(false)
+    setModalClosed(true)
+  }
+
+  const handleModalClose = () => {
+    setShowTypeModal(false)
+    setModalClosed(true)
+    router.push("/projects")
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -53,7 +72,20 @@ export function AddProjectPage({ user }: AddProjectPageProps) {
     <div className="min-h-screen bg-background">
       <Header user={user} onSettingsClick={() => router.push("/settings")} />
       <div className="container mx-auto py-8 px-4">
-        <ProjectFormTabs onSubmit={handleAddProject} onCancel={() => router.push("/projects")} clients={clients} />
+        {showTypeModal && !modalClosed ? (
+          <ProjectTypeModal
+            isOpen={true}
+            onClose={handleModalClose}
+            onSelect={handleProjectTypeSelect}
+          />
+        ) : (
+          <ProjectFormTabs
+            onSubmit={handleAddProject}
+            onCancel={() => router.push("/projects")}
+            clients={clients}
+            initialProjectType={projectType}
+          />
+        )}
       </div>
     </div>
   )
